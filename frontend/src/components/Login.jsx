@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Person,
@@ -10,6 +10,7 @@ import {
 import { Stack, Input, FormHelperText, FormControl } from "@mui/joy";
 import { Button, IconButton } from "@mui/material";
 import { fetchLogin } from "../fetches/fetchAuth";
+import { UserContext } from "../context/UserContext";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -17,8 +18,8 @@ export default function Login() {
   const [error, setError] = useState("");
   const [inputColor, setInputColor] = useState("neutral");
   const [showPassword, setShowPassword] = useState(false);
+  const { signin } = useContext(UserContext);
   const navigate = useNavigate();
-  useEffect(() => {}, []);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -31,9 +32,9 @@ export default function Login() {
     }
 
     const token = response.jwtToken;
+    console.log(token);
 
-    localStorage.setItem("token", token);
-
+    signin(token);
     navigate("/posts");
 
     return;

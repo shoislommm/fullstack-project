@@ -1,5 +1,5 @@
-import Post from "../components/Post";
+import PostDetails from "../components/PostDetails";
 
 export default function DetailsPage() {
-  return <Post />;
+  return <PostDetails />;
 }

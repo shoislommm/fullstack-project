@@ -8,7 +8,7 @@ export default function SearchPosts() {
     useContext(SearchPostsContext);
 
   return (
-    <Stack>
+    <Stack sx={{ ml: "95px" }}>
       <Input
         sx={{
           height: "45px",

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Box } from "@mui/material";
@@ -44,12 +45,12 @@ export default function PostsProvider({ children }) {
   const totalPages = results.data.totalPages;
 
   const data = {
-    posts: posts,
-    page: page,
-    limit: limit,
-    totalPages: totalPages,
-    handlePagination: handlePagination,
-    handleLimit: handleLimit,
+    posts,
+    page,
+    limit,
+    totalPages,
+    handlePagination,
+    handleLimit,
   };
 
   return <PostsContext.Provider value={data}>{children}</PostsContext.Provider>;

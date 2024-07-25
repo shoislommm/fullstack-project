@@ -1,29 +1,15 @@
-import {
-  Link,
-  useLocation,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import SearchPosts from "./SearchPosts";
 import { useContext, useState } from "react";
 import { UserContext } from "../context/UserContext";
 import Modal from "./Modal";
-import useLocalStorage from "../hooks/useLocalStorage";
 
 export default function Header() {
   const [showModal, setShowModal] = useState(false);
-  const [searchParams] = useSearchParams();
-  const storedToken = localStorage.getItem("token");
-  const type = searchParams.get("type");
-  const user = useContext(UserContext);
   const location = useLocation();
   const navigate = useNavigate();
-  const [token, setToken] = useLocalStorage("token", storedToken);
-
-  console.log(localStorage);
-
-  console.log(token);
+  const { user, signout } = useContext(UserContext);
 
   return (
     <header className="header">
@@ -37,19 +23,17 @@ export default function Header() {
 
       {!user ? (
         <div className="button-parent">
-          {type !== "register" ? (
-            <Link to="/auth?type=login">
-              <Button variant="contained">Sign in</Button>
-            </Link>
-          ) : (
-            <Link to="/auth?type=register">
-              <Button variant="contained">Sign up</Button>
-            </Link>
-          )}
+          <Link to="/auth?type=login">
+            <Button variant="contained">Sign in</Button>
+          </Link>
+
+          <Link to="/auth?type=register">
+            <Button variant="contained">Sign up</Button>
+          </Link>
         </div>
       ) : (
         <div className="button-parent">
-          <b className="greeting">Welcome, {user.name}!</b>
+          <b className="greeting">Welcome, {user?.name}!</b>
           <Button variant="contained" onClick={() => setShowModal(true)}>
             Sign out
           </Button>
@@ -63,9 +47,9 @@ export default function Header() {
               <Button
                 variant="contained"
                 onClick={() => {
-                  setToken({});
+                  signout();
                   setShowModal(false);
-                  // navigate("/auth?type=login");
+                  navigate("/auth?type=login");
                 }}
               >
                 Yes

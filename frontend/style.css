@@ -74,6 +74,47 @@ header {
   box-shadow: 10px 10px 10px black;
 }
 
+.post-comments {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 300px;
+  margin: 40px;
+  color: black;
+  background-color: white;
+  border: 1px solid gray;
+  border-radius: 10px;
+  box-shadow: 10px 10px 10px black;
+}
+
+.post-comments > button {
+  margin: 15px 0 10px 0;
+  align-self: center;
+  width: 100px;
+}
+
+.comment-card {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  height: auto;
+  margin: 10px 10px;
+  border: 1px solid gray;
+  border-radius: 5px;
+  box-shadow: 3px 3px 3px black;
+}
+
+.comment-author {
+  font-weight: bold;
+  margin: 0;
+  margin-left: 10px;
+}
+
+.comment-text {
+  margin: 0px;
+  margin-left: 10px;
+}
+
 .details-title {
   align-self: flex-start;
   justify-self: flex-start;
@@ -140,14 +181,14 @@ header {
 }
 
 .posts-limit {
-  margin: 200px 250px 0 0;
+  margin-right: 220px;
   border: 2px solid #333;
   border-radius: 10px;
   background-color: white;
 }
 
 .posts-pagination {
-  margin: 200px 220px 0 0;
+  margin-right: 220px;
   padding: 5px;
   border: 2px solid #333;
   border-radius: 10px;
@@ -163,6 +204,7 @@ header {
   justify-content: end;
   align-items: center;
   width: auto;
+  margin: 100px 0;
 }
 
 .auth {

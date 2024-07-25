@@ -8,14 +8,8 @@ export default function PostsLimit() {
   return (
     <div className="posts-limit">
       <FormControl sx={{ m: 1, minWidth: 120 }}>
-        <InputLabel id="demo-simple-select-disabled-label">Limit</InputLabel>
-        <Select
-          labelId="demo-simple-select-disabled-label"
-          id="demo-simple-select-disabled"
-          value={limit}
-          label="Age"
-          onChange={handleLimit}
-        >
+        <InputLabel>Limit</InputLabel>
+        <Select value={limit} label="Limit" size="small" onChange={handleLimit}>
           <MenuItem value={5}>5</MenuItem>
           <MenuItem value={10}>10</MenuItem>
           <MenuItem value={15}>15</MenuItem>

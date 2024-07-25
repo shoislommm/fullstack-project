@@ -1,17 +1,16 @@
 import { PostsContext } from "../context/PostsContext";
 import { SearchPostsContext } from "../context/SearchPostsContext";
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext } from "react";
 
 // eslint-disable-next-line react/prop-types
 export default function SearchPostsProvider({ children }) {
   const data = useContext(PostsContext);
   const [requestParams, setRequestParams] = useState("");
-  const [newData, setNewData] = useState(data);
-  useEffect(() => {}, [data]);
+  const [searchPosts, setSearchPosts] = useState([]);
 
   function handleSearch() {
     if (requestParams === "") {
-      setNewData(data);
+      setSearchPosts(null);
       return;
     }
 
@@ -23,17 +22,14 @@ export default function SearchPostsProvider({ children }) {
 
     const filteredNewPosts = newPosts.filter((post) => post);
 
-    setNewData((prev) => ({
-      ...prev,
-      posts: filteredNewPosts,
-    }));
+    setSearchPosts(() => filteredNewPosts);
 
     return;
   }
 
   return (
     <SearchPostsContext.Provider
-      value={{ newData, requestParams, setRequestParams, handleSearch }}
+      value={{ searchPosts, requestParams, setRequestParams, handleSearch }}
     >
       {children}
     </SearchPostsContext.Provider>

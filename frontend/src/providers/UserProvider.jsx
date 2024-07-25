@@ -1,18 +1,34 @@
+/* eslint-disable react/prop-types */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useQuery } from "@tanstack/react-query";
 import { UserContext } from "../context/UserContext";
 import fetchUser from "../fetches/fetchUser";
 import { Box } from "@mui/material";
 import { CircularProgress } from "@mui/joy";
+import { useEffect, useState } from "react";
+import useLocalStorage from "../hooks/useLocalStorage";
 
-// eslint-disable-next-line react/prop-types
 export default function UserProvider({ children }) {
-  const token = localStorage.getItem("token");
+  const [token, setToken] = useLocalStorage();
+  const [user, setUser] = useState(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["provider", token],
     queryFn: () => fetchUser(token),
     enabled: !!token,
   });
+
+  useEffect(() => {
+    setUser(data?.user ? data.user : null);
+  }, [data, token]);
+
+  const signout = () => {
+    setToken();
+  };
+
+  const signin = (token) => {
+    setToken(token);
+  };
 
   if (isLoading) {
     return (
@@ -28,9 +44,10 @@ export default function UserProvider({ children }) {
       </Box>
     );
   }
-  const user = data?.user;
 
-  console.log(user);
-
-  return <UserContext.Provider value={user}>{children}</UserContext.Provider>;
+  return (
+    <UserContext.Provider value={{ user, signout, signin }}>
+      {children}
+    </UserContext.Provider>
+  );
 }
