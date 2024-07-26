@@ -23,8 +23,8 @@ import {
 
 export default function PostDetails() {
   const [clickedIcon, setClickedIcon] = useState(false);
-  const [showLoadMore, setShowLoadMore] = useState(true);
   const [showComments, setShowComments] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [comments, setComments] = useState([]);
   const [limit, setLimit] = useState(5);
   const [cursor, setCursor] = useState("");
@@ -44,7 +44,7 @@ export default function PostDetails() {
 
   const { data: commentsData, isLoading: isCommentsLoading } = useQuery({
     queryKey: ["comments", id, limit],
-    queryFn: () => fetchComments(id, limit, cursor),
+    queryFn: () => fetchComments(id, limit, null),
   });
 
   useEffect(() => {
@@ -55,6 +55,7 @@ export default function PostDetails() {
   }, [commentsData, isCommentsLoading]);
 
   const loadMore = async () => {
+    setLoading(true);
     try {
       const data = await fetchComments(id, limit, cursor);
 
@@ -62,6 +63,8 @@ export default function PostDetails() {
       setCursor(data.nextCursor);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,15 +82,10 @@ export default function PostDetails() {
 
   function handleLimit(event) {
     setLimit(event.target.value);
-    setCursor("");
-  }
-
-  if (comments.length == commentsData.totalCount) {
-    setShowLoadMore((prev) => !prev);
+    setCursor(null);
   }
 
   const post = postData.post;
-  const nextCursor = commentsData?.nextCursor;
 
   return (
     <div className="button-parent">
@@ -122,7 +120,7 @@ export default function PostDetails() {
             variant="contained"
             sx={{ p: "0 10px" }}
             onClick={() => {
-              setShowComments(!showComments);
+              setShowComments((prev) => !prev);
             }}
           >
             Comments
@@ -145,37 +143,37 @@ export default function PostDetails() {
           </div>
         </div>
       </div>
-      {comments.length > 0 ? (
-        showComments ? (
-          <div className="post-comments">
-            {comments.map((comment) => (
-              <div className="comment-card" key={comment.id} id={comment.id}>
-                <Person fontSize="large" />
-                <b className="comment-author">{comment.author.username}:</b>
-                <p className="comment-text">{comment.text}</p>
-              </div>
-            ))}
-            {showLoadMore ? (
-              <Button
-                variant="contained"
-                style={{ border: "1px solid gray" }}
-                sx={{
-                  ":hover": {
-                    backgroundColor: "rgb(222, 222, 222)",
-                    border: "1px solid gray",
-                  },
-                }}
-                onClick={() => {
-                  setCursor(nextCursor);
-                  loadMore();
-                }}
-              >
-                LoadMore
-              </Button>
-            ) : null}
-          </div>
-        ) : null
-      ) : null}
+
+      {comments.length > 0 && showComments && (
+        <div className="post-comments">
+          {comments.map((comment) => (
+            <div className="comment-card" key={comment.id} id={comment.id}>
+              <Person fontSize="large" />
+              <b className="comment-author">{comment.author.username}:</b>
+              <p className="comment-text">{comment.text}</p>
+            </div>
+          ))}
+
+          {cursor && (
+            <Button
+              variant="contained"
+              style={{ border: "1px solid gray" }}
+              sx={{
+                ":hover": {
+                  backgroundColor: "rgb(222, 222, 222)",
+                  border: "1px solid gray",
+                },
+              }}
+              onClick={() => {
+                loadMore();
+              }}
+              disabled={loading}
+            >
+              LoadMore
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
