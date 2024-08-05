@@ -1,17 +1,15 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button, IconButton } from "@mui/material";
 import SearchPosts from "./SearchPosts";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { UserContext } from "../context/UserContext";
-import Modal from "./Modal";
 import { Avatar } from "@mui/joy";
-import NewPostDetails from "./NewPostDetails";
+import { ProfileContext } from "../context/ProfileContext";
 
 export default function Header() {
-  const [showModal, setShowModal] = useState(false);
+  const { handleClick } = useContext(ProfileContext);
+  const { user } = useContext(UserContext);
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, signout } = useContext(UserContext);
 
   return (
     <header className="header">
@@ -36,15 +34,12 @@ export default function Header() {
       ) : (
         <div className="button-parent">
           <b className="greeting">Welcome, {user?.name}!</b>
-          <Button variant="contained" onClick={() => setShowModal(true)}>
-            Sign out
-          </Button>
           <IconButton
             sx={{
               height: "40px",
               width: "40px",
             }}
-            onClick={() => navigate("/posts/create")}
+            onClick={() => handleClick()}
           >
             <Avatar
               sx={{
@@ -54,28 +49,6 @@ export default function Header() {
           </IconButton>
         </div>
       )}
-      {showModal ? (
-        <Modal>
-          <div>
-            <h1>Are you sure you want to sign out?</h1>
-            <div className="button-parent">
-              <Button
-                variant="contained"
-                onClick={() => {
-                  signout();
-                  setShowModal(false);
-                  navigate("/auth?type=login");
-                }}
-              >
-                Yes
-              </Button>
-              <Button variant="contained" onClick={() => setShowModal(false)}>
-                No
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      ) : null}
     </header>
   );
 }

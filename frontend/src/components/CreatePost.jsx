@@ -7,7 +7,7 @@ import { useState } from "react";
 import useLocalStorage from "../hooks/useLocalStorage";
 import toast from "react-hot-toast";
 
-export default function NewPostDetails() {
+export default function CreatePost() {
   const [token] = useLocalStorage();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -19,7 +19,6 @@ export default function NewPostDetails() {
     try {
       setIsDisabled(true);
       const data = await createPost(token, title, content);
-      console.log(data);
       toast("Post created!", {
         style: {
           margin: "5px",
@@ -29,7 +28,7 @@ export default function NewPostDetails() {
           boxShadow: "5px 5px 5px black",
         },
       });
-      navigate("/posts");
+      navigate(`/posts/${data.post.id}`);
     } catch (error) {
       console.error(error);
     } finally {

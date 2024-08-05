@@ -87,8 +87,7 @@ export default function PostDetails() {
 
   const handleDeletePost = async () => {
     try {
-      const data = await deletePost(id, token);
-      console.log(data);
+      await deletePost(id, token);
       toast("Post deleted!", {
         style: {
           margin: "5px",
@@ -171,7 +170,8 @@ export default function PostDetails() {
       <div className="test">
         <Button
           variant="contained"
-          startIcon={<WestRounded />}
+          startIc
+          on={<WestRounded />}
           onClick={() => navigate("/posts")}
         >
           Go Back

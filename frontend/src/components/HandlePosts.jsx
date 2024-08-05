@@ -3,21 +3,26 @@ import { useContext, useEffect, useState } from "react";
 import { PostsContext } from "../context/PostsContext";
 import { SearchPostsContext } from "../context/SearchPostsContext";
 import { UserContext } from "../context/UserContext";
+import { ProfileContext } from "../context/ProfileContext";
 
 export default function HandlePosts() {
-  const data = useContext(PostsContext);
+  const { posts } = useContext(PostsContext);
+  const { showMyPosts } = useContext(ProfileContext);
   const { searchPosts } = useContext(SearchPostsContext);
-  const posts = data.posts;
-  const [show, setShow] = useState(posts);
+  const [allPosts, setAllPosts] = useState(posts);
+  const [show, setShow] = useState(allPosts);
   const { user } = useContext(UserContext);
 
   useEffect(() => {
-    if (searchPosts.length <= 0) {
-      setShow(posts);
+    if (searchPosts.length <= 0 && !showMyPosts) {
+      setShow(allPosts);
+    } else if (showMyPosts) {
+      setShow(allPosts.filter((post) => post.author.username === user.name));
     } else {
       setShow(searchPosts);
     }
-  }, [posts, searchPosts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allPosts, searchPosts, showMyPosts]);
 
   return show.map((post) => (
     <Link className="post-card" key={post.id} to={`/posts/${post.id}`}>
