@@ -24,20 +24,21 @@ export default function Login() {
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   async function handleClick() {
-    const response = await fetchLogin(username, password);
-    if (response.success === false) {
-      setError(response.message);
-      setInputColor("danger");
-      return;
+    try {
+      const response = await fetchLogin(username, password);
+      if (response.success === false) {
+        setError(response.message);
+        setInputColor("danger");
+        return;
+      }
+
+      const token = response.jwtToken;
+
+      signin(token);
+      navigate("/posts");
+    } catch (error) {
+      console.error(error);
     }
-
-    const token = response.jwtToken;
-    console.log(token);
-
-    signin(token);
-    navigate("/posts");
-
-    return;
   }
 
   return (
@@ -87,6 +88,7 @@ export default function Login() {
       )}
       <br />
       <Button
+        className="details-button"
         variant="contained"
         style={{
           height: "60px",

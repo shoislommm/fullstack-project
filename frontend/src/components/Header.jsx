@@ -1,9 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@mui/material";
+import { Button, IconButton } from "@mui/material";
 import SearchPosts from "./SearchPosts";
 import { useContext, useState } from "react";
 import { UserContext } from "../context/UserContext";
 import Modal from "./Modal";
+import { Avatar } from "@mui/joy";
+import NewPostDetails from "./NewPostDetails";
 
 export default function Header() {
   const [showModal, setShowModal] = useState(false);
@@ -37,6 +39,19 @@ export default function Header() {
           <Button variant="contained" onClick={() => setShowModal(true)}>
             Sign out
           </Button>
+          <IconButton
+            sx={{
+              height: "40px",
+              width: "40px",
+            }}
+            onClick={() => navigate("/posts/create")}
+          >
+            <Avatar
+              sx={{
+                borderRadius: "3px",
+              }}
+            />
+          </IconButton>
         </div>
       )}
       {showModal ? (

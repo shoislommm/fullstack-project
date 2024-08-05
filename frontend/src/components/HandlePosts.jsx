@@ -19,8 +19,6 @@ export default function HandlePosts() {
     }
   }, [posts, searchPosts]);
 
-  console.log(show);
-
   return show.map((post) => (
     <Link className="post-card" key={post.id} to={`/posts/${post.id}`}>
       <h2>Title: {post.title}</h2>

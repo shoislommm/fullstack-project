@@ -3,9 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useContext, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
+import Modal from "./Modal";
 import useLocalStorage from "../hooks/useLocalStorage";
 import fetchPost from "../fetches/fetchPost";
-import fetchComments from "../fetches/fetchComments";
+import {
+  getComments,
+  createComment,
+  deleteComment,
+} from "../fetches/fetchComments";
 import fetchLikes from "../fetches/fetchLikes";
 import {
   Button,
@@ -19,13 +24,20 @@ import {
   FavoriteBorder,
   WestRounded,
   Person,
+  Delete,
 } from "@mui/icons-material";
+import { Input } from "@mui/joy";
+import toast from "react-hot-toast";
+import { deletePost } from "../fetches/fetchPosts";
 
 export default function PostDetails() {
   const [clickedIcon, setClickedIcon] = useState(false);
-  const [showComments, setShowComments] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(true);
   const [comments, setComments] = useState([]);
+  const [commentId, setCommentId] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const [limit, setLimit] = useState(5);
   const [cursor, setCursor] = useState("");
   const { user } = useContext(UserContext);
@@ -44,7 +56,7 @@ export default function PostDetails() {
 
   const { data: commentsData, isLoading: isCommentsLoading } = useQuery({
     queryKey: ["comments", id, limit],
-    queryFn: () => fetchComments(id, limit, null),
+    queryFn: () => getComments(id, limit, null),
   });
 
   useEffect(() => {
@@ -56,8 +68,9 @@ export default function PostDetails() {
 
   const loadMore = async () => {
     setLoading(true);
+
     try {
-      const data = await fetchComments(id, limit, cursor);
+      const data = await getComments(id, limit, cursor);
 
       setComments((prev) => [...prev, ...data.comments]);
       setCursor(data.nextCursor);
@@ -69,8 +82,27 @@ export default function PostDetails() {
   };
 
   if (isPostLoading || isCommentsLoading) {
-    return <div>Loading...</div>;
+    return;
   }
+
+  const handleDeletePost = async () => {
+    try {
+      const data = await deletePost(id, token);
+      console.log(data);
+      toast("Post deleted!", {
+        style: {
+          margin: "5px",
+          color: "black",
+          backgroundColor: "white",
+          border: "2px solid black",
+          boxShadow: "5px 5px 5px black",
+        },
+      });
+      navigate("/posts");
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleLike = async () => {
     if (!user) {
@@ -87,16 +119,69 @@ export default function PostDetails() {
 
   const post = postData.post;
 
+  const handleCreateComment = async () => {
+    setLoading(true);
+
+    try {
+      const data = await createComment(id, token, commentText);
+      setComments((prev) => [data.comment, ...prev]);
+      setCommentText("");
+      toast("Comment added!", {
+        style: {
+          margin: "5px",
+          color: "black",
+          backgroundColor: "white",
+          border: "2px solid black",
+          boxShadow: "5px 5px 5px black",
+        },
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await deleteComment(id, commentId, token);
+      setComments(comments.filter((comment) => comment.id !== commentId));
+      toast("Comment deleted!", {
+        style: {
+          margin: "5px",
+          color: "black",
+          backgroundColor: "white",
+          border: "2px solid black",
+          boxShadow: "5px 5px 5px black",
+        },
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
-    <div className="button-parent">
-      <Button
-        className="details-button"
-        variant="contained"
-        startIcon={<WestRounded />}
-        onClick={() => navigate("/posts")}
-      >
-        Go Back
-      </Button>
+    <div
+      className="button-parent"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div className="test">
+        <Button
+          variant="contained"
+          startIcon={<WestRounded />}
+          onClick={() => navigate("/posts")}
+        >
+          Go Back
+        </Button>
+        {post.author.username === user?.name ? (
+          <Button variant="contained" onClick={() => handleDeletePost()}>
+            Delete Post
+          </Button>
+        ) : null}
+      </div>
       <div className="post-details" key={post.id}>
         <h2 className="details-title"> {post.title}</h2>
         <h3 className="details-content"> {post.content}</h3>
@@ -116,15 +201,6 @@ export default function PostDetails() {
             {clickedIcon ? <Favorite /> : <FavoriteBorder />}
             <p>{post.numberOfLikes}</p>
           </Button>
-          <Button
-            variant="contained"
-            sx={{ p: "0 10px" }}
-            onClick={() => {
-              setShowComments((prev) => !prev);
-            }}
-          >
-            Comments
-          </Button>
           <div className="comments-limit">
             <FormControl sx={{ m: 1, minWidth: 120 }}>
               <InputLabel>Comments limit</InputLabel>
@@ -143,37 +219,98 @@ export default function PostDetails() {
           </div>
         </div>
       </div>
-
-      {comments.length > 0 && showComments && (
-        <div className="post-comments">
-          {comments.map((comment) => (
-            <div className="comment-card" key={comment.id} id={comment.id}>
-              <Person fontSize="large" />
-              <b className="comment-author">{comment.author.username}:</b>
-              <p className="comment-text">{comment.text}</p>
-            </div>
-          ))}
-
-          {cursor && (
+      <div className="post-comments">
+        <Input
+          sx={{
+            p: "0",
+            ":focus-within": {
+              "--Input-focusedHighlight": "2px solid black",
+            },
+          }}
+          type="text"
+          value={commentText}
+          variant="plain"
+          className="comment-card"
+          placeholder="Add a comment..."
+          onChange={(event) => {
+            setCommentText(event.target.value);
+            console.log(commentText);
+            if (commentText?.trim?.() != "") {
+              setIsDisabled(false);
+            } else setIsDisabled(true);
+          }}
+          startDecorator={<Person fontSize="large" />}
+          endDecorator={
             <Button
-              variant="contained"
-              style={{ border: "1px solid gray" }}
-              sx={{
-                ":hover": {
-                  backgroundColor: "rgb(222, 222, 222)",
-                  border: "1px solid gray",
-                },
-              }}
-              onClick={() => {
-                loadMore();
-              }}
-              disabled={loading}
+              className="comment-button"
+              onClick={() => handleCreateComment()}
+              disabled={isDisabled}
             >
-              LoadMore
+              comment
             </Button>
-          )}
-        </div>
-      )}
+          }
+        />
+        {comments.map((comment) => (
+          <div className="comment-card" key={comment.id} id={comment.id}>
+            <Person fontSize="large" />
+            <b className="comment-author">
+              {comment.author.username === user?.name
+                ? "me"
+                : comment.author.username}
+              :
+            </b>
+            <p className="comment-text">{comment.text}</p>
+            {comment.author.username === user?.name ? (
+              <Delete
+                onClick={() => {
+                  setCommentId(comment.id);
+                  setShowModal(true);
+                }}
+              />
+            ) : null}
+          </div>
+        ))}
+        {showModal ? (
+          <Modal>
+            <div>
+              <h1>Delete comment permanently?</h1>
+              <div className="button-parent">
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    handleDeleteComment(commentId);
+                    setCommentId("");
+                    setShowModal(false);
+                  }}
+                >
+                  Yes
+                </Button>
+                <Button variant="contained" onClick={() => setShowModal(false)}>
+                  No
+                </Button>
+              </div>
+            </div>
+          </Modal>
+        ) : null}
+        {cursor && (
+          <Button
+            variant="contained"
+            style={{ border: "1px solid gray" }}
+            sx={{
+              ":hover": {
+                backgroundColor: "rgb(222, 222, 222)",
+                border: "1px solid gray",
+              },
+            }}
+            onClick={() => {
+              loadMore();
+            }}
+            disabled={loading}
+          >
+            LoadMore
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

@@ -6,6 +6,8 @@ import DetailsPage from "./pages/DetailsPage.jsx";
 import UserProvider from "./providers/UserProvider.jsx";
 import PostsProvider from "./providers/PostsProvider.jsx";
 import SearchPostsProvider from "./providers/SearchPostsProvider.jsx";
+import { Toaster } from "react-hot-toast";
+import NewPostDetails from "./components/NewPostDetails.jsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,9 +25,11 @@ function App() {
         <UserProvider>
           <PostsProvider>
             <SearchPostsProvider>
+              <Toaster position="top-left" reverseOrder={false} />
               <Routes>
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/posts" element={<PostsPage />} />
+                <Route path="/posts/create" element={<NewPostDetails />} />
                 <Route path="/posts/:id" element={<DetailsPage />} />
               </Routes>
             </SearchPostsProvider>

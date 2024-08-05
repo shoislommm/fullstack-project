@@ -4,7 +4,9 @@
 }
 
 body {
-  background-image: url(https://img.freepik.com/free-vector/circles-background-dark-tones_60389-166.jpg?w=2000&t=st=1721227241~exp=1721227841~hmac=f92a4889206f36b18d4ef7ccda35e31ba089b90b8eb7fd670ca19c4677429cf6);
+  background-image: url(https://images8.alphacoders.com/133/1337140.png);
+  background-position: left 43% top 50%;
+  /* background-repeat: no-repeat; */
   margin: 0;
   font-family: "Gill Sans", "Gill Sans MT", "Trebuchet MS", sans-serif;
 }
@@ -58,15 +60,22 @@ header {
   background-color: #c0c0c0;
 }
 
+.button-parent .comment-button {
+  background-color: white;
+  color: black;
+  border: 1px solid black;
+  margin: 0 3px;
+  height: 30px;
+  box-shadow: none;
+}
+
 .post-details {
   display: flex;
   flex-direction: column;
   align-items: center;
   height: auto;
   width: 700px;
-  margin: auto;
-  margin-top: 200px;
-  margin-left: 230px;
+  margin: 70px 0;
   border: 2px solid black;
   text-align: center;
   border-radius: 10px;
@@ -78,7 +87,7 @@ header {
   display: flex;
   flex-direction: column;
   height: 100%;
-  width: 300px;
+  width: 70%;
   margin: 40px;
   color: black;
   background-color: white;
@@ -181,14 +190,18 @@ header {
 }
 
 .posts-limit {
-  margin-right: 220px;
+  grid-column-start: 3;
+  width: 140px;
+  height: 60px;
   border: 2px solid #333;
   border-radius: 10px;
   background-color: white;
 }
 
 .posts-pagination {
-  margin-right: 220px;
+  grid-column-start: 2;
+  /* width: ; */
+  height: 60px;
   padding: 5px;
   border: 2px solid #333;
   border-radius: 10px;
@@ -200,9 +213,8 @@ header {
 }
 
 .control-panel {
-  display: flex;
-  justify-content: end;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 33% 33% 33%;
   width: auto;
   margin: 100px 0;
 }
@@ -212,6 +224,18 @@ header {
   flex-direction: column;
   width: 500px;
   margin: 100px auto;
+}
+
+.auth .details-button {
+  background-color: white;
+  width: 500px;
+  color: black;
+  border: 1px solid black;
+  box-shadow: 5px 5px 5px black;
+}
+
+.auth .details-button:hover {
+  background-color: #c0c0c0;
 }
 
 #modal {
@@ -242,4 +266,18 @@ header {
 #modal .buttons {
   display: flex;
   justify-content: space-evenly;
+}
+
+.delete-post-button {
+  justify-self: start;
+}
+
+.test {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 60px 0;
+  margin-bottom: 30px;
+  padding: 0 40px;
+  width: 100%;
 }

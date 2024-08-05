@@ -139,6 +139,7 @@ export default function Register() {
       </Stack>
       <br />
       <Button
+        className="details-button"
         variant="contained"
         style={{
           height: "60px",
