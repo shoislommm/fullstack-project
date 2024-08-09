@@ -9,9 +9,13 @@ import fetchPosts from "../fetches/fetchPosts";
 // eslint-disable-next-line react/prop-types
 export default function PostsProvider({ children }) {
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(20);
 
-  const results = useQuery({
+  const {
+    data: results,
+    isLoading: isLoading,
+    refetch: refetchPosts,
+  } = useQuery({
     queryKey: ["posts", page, limit],
     queryFn: () => fetchPosts(page, limit),
   });
@@ -26,7 +30,7 @@ export default function PostsProvider({ children }) {
     setPage(1);
   }
 
-  if (results.isLoading) {
+  if (isLoading) {
     return (
       <Box
         sx={{
@@ -41,8 +45,8 @@ export default function PostsProvider({ children }) {
     );
   }
 
-  const posts = results.data.posts;
-  const totalPages = results.data.totalPages;
+  const posts = results.posts;
+  const totalPages = results.totalPages;
 
   const data = {
     posts,
@@ -51,6 +55,7 @@ export default function PostsProvider({ children }) {
     totalPages,
     handlePagination,
     handleLimit,
+    refetchPosts,
   };
 
   return <PostsContext.Provider value={data}>{children}</PostsContext.Provider>;

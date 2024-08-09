@@ -9,6 +9,7 @@ import SearchPostsProvider from "./providers/SearchPostsProvider.jsx";
 import { Toaster } from "react-hot-toast";
 import CreatePost from "./components/CreatePost.jsx";
 import ProfileProvider from "./providers/ProfileProvider.jsx";
+import { MDXProvider } from "@mdx-js/react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,13 +28,15 @@ function App() {
           <PostsProvider>
             <ProfileProvider>
               <SearchPostsProvider>
-                <Toaster position="top-left" reverseOrder={false} />
-                <Routes>
-                  <Route path="/auth" element={<AuthPage />} />
-                  <Route path="/posts" element={<PostsPage />} />
-                  <Route path="/posts/create" element={<CreatePost />} />
-                  <Route path="/posts/:id" element={<DetailsPage />} />
-                </Routes>
+                <MDXProvider>
+                  <Toaster position="top-right" reverseOrder={false} />
+                  <Routes>
+                    <Route path="/auth" element={<AuthPage />} />
+                    <Route path="/posts" element={<PostsPage />} />
+                    <Route path="/posts/create" element={<CreatePost />} />
+                    <Route path="/posts/:id" element={<DetailsPage />} />
+                  </Routes>
+                </MDXProvider>
               </SearchPostsProvider>
             </ProfileProvider>
           </PostsProvider>

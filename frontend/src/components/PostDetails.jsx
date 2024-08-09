@@ -22,6 +22,8 @@ import {
 import {
   Favorite,
   FavoriteBorder,
+  Bookmark,
+  BookmarkBorder,
   WestRounded,
   Person,
   Delete,
@@ -29,9 +31,13 @@ import {
 import { Input } from "@mui/joy";
 import toast from "react-hot-toast";
 import { deletePost } from "../fetches/fetchPosts";
+import fetchFavourites from "../fetches/fetchFavourites";
+import { PostsContext } from "../context/PostsContext";
+import MarkdownPreview from "../functions/MarkdownPreview";
 
 export default function PostDetails() {
-  const [clickedIcon, setClickedIcon] = useState(false);
+  const [likeIcon, setLikeIcon] = useState();
+  const [favouriteIcon, setFavouriteIcon] = useState();
   const [loading, setLoading] = useState(false);
   const [isDisabled, setIsDisabled] = useState(true);
   const [comments, setComments] = useState([]);
@@ -40,10 +46,11 @@ export default function PostDetails() {
   const [showModal, setShowModal] = useState(false);
   const [limit, setLimit] = useState(5);
   const [cursor, setCursor] = useState("");
-  const { user } = useContext(UserContext);
   const { id } = useParams();
   const [token] = useLocalStorage();
+  const { user } = useContext(UserContext);
   const navigate = useNavigate();
+  const { refetchPosts } = useContext(PostsContext);
 
   const {
     data: postData,
@@ -88,6 +95,8 @@ export default function PostDetails() {
   const handleDeletePost = async () => {
     try {
       await deletePost(id, token);
+      await refetchPosts();
+
       toast("Post deleted!", {
         style: {
           margin: "5px",
@@ -97,6 +106,7 @@ export default function PostDetails() {
           boxShadow: "5px 5px 5px black",
         },
       });
+
       navigate("/posts");
     } catch (error) {
       console.error(error);
@@ -108,7 +118,36 @@ export default function PostDetails() {
       navigate("/auth");
     }
 
-    await fetchLikes(id, token);
+    const data = await fetchLikes(id, token);
+    setLikeIcon(data.success);
+    toast(data.message, {
+      style: {
+        margin: "5px",
+        color: "black",
+        backgroundColor: "white",
+        border: "2px solid black",
+        boxShadow: "5px 5px 5px black",
+      },
+    });
+  };
+
+  const handleFavourite = async () => {
+    if (!user) {
+      navigate("/auth");
+    }
+    const data = await fetchFavourites(id, token);
+    setFavouriteIcon(data.success);
+    console.log(data.success);
+
+    toast(data.message, {
+      style: {
+        margin: "5px",
+        color: "black",
+        backgroundColor: "white",
+        border: "2px solid black",
+        boxShadow: "5px 5px 5px black",
+      },
+    });
   };
 
   function handleLimit(event) {
@@ -119,9 +158,8 @@ export default function PostDetails() {
   const post = postData.post;
 
   const handleCreateComment = async () => {
-    setLoading(true);
-
     try {
+      setLoading(true);
       const data = await createComment(id, token, commentText);
       setComments((prev) => [data.comment, ...prev]);
       setCommentText("");
@@ -170,8 +208,7 @@ export default function PostDetails() {
       <div className="test">
         <Button
           variant="contained"
-          startIc
-          on={<WestRounded />}
+          startIcon={<WestRounded />}
           onClick={() => navigate("/posts")}
         >
           Go Back
@@ -184,39 +221,35 @@ export default function PostDetails() {
       </div>
       <div className="post-details" key={post.id}>
         <h2 className="details-title"> {post.title}</h2>
-        <h3 className="details-content"> {post.content}</h3>
+        <p className="details-content">
+          <MarkdownPreview markdown={post.content} />
+        </p>
         <div className="details-info">
-          <p>
+          <p className=" username child">
             {post.author.username === user?.name ? "me" : post.author.username}
           </p>
-
           <Button
+            className="like-button child"
             variant="contained"
             onClick={() => {
               postRefetch();
               handleLike();
-              setClickedIcon(!clickedIcon);
+              setLikeIcon(!likeIcon);
             }}
           >
-            {clickedIcon ? <Favorite /> : <FavoriteBorder />}
+            {likeIcon ? <Favorite /> : <FavoriteBorder />}
             <p>{post.numberOfLikes}</p>
           </Button>
-          <div className="comments-limit">
-            <FormControl sx={{ m: 1, minWidth: 120 }}>
-              <InputLabel>Comments limit</InputLabel>
-              <Select
-                value={limit}
-                label="Comments limit"
-                size="small"
-                onChange={handleLimit}
-              >
-                <MenuItem value={5}>5</MenuItem>
-                <MenuItem value={10}>10</MenuItem>
-                <MenuItem value={15}>15</MenuItem>
-                <MenuItem value={20}>20</MenuItem>
-              </Select>
-            </FormControl>
-          </div>
+          <Button
+            className="child"
+            variant="contained"
+            onClick={() => {
+              setFavouriteIcon(!favouriteIcon);
+              handleFavourite();
+            }}
+          >
+            {favouriteIcon ? <Bookmark /> : <BookmarkBorder />}
+          </Button>
         </div>
       </div>
       <div className="post-comments">
@@ -292,6 +325,22 @@ export default function PostDetails() {
             </div>
           </Modal>
         ) : null}
+        <div>
+          <FormControl sx={{ m: 1, minWidth: 120 }}>
+            <InputLabel>Comments limit</InputLabel>
+            <Select
+              value={limit}
+              label="Comments limit"
+              size="small"
+              onChange={handleLimit}
+            >
+              <MenuItem value={5}>5</MenuItem>
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={15}>15</MenuItem>
+              <MenuItem value={20}>20</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
         {cursor && (
           <Button
             variant="contained"
