@@ -1,13 +1,20 @@
 import { Button } from "@mui/material";
-import { WestRounded } from "@mui/icons-material";
+import { WestRounded, ErrorOutline } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { Stack, Input, FormControl, Textarea, Box } from "@mui/joy";
+import {
+  Stack,
+  Input,
+  FormControl,
+  FormHelperText,
+  Textarea,
+  styled,
+} from "@mui/joy";
 import { createPost } from "../fetches/fetchPosts";
 import { useContext, useState } from "react";
 import useLocalStorage from "../hooks/useLocalStorage";
-import toast from "react-hot-toast";
 import { PostsContext } from "../context/PostsContext";
 import MarkdownPreview from "../functions/MarkdownPreview";
+import pushToast from "../functions/toast";
 
 export default function CreatePost() {
   const { refetchPosts } = useContext(PostsContext);
@@ -15,25 +22,29 @@ export default function CreatePost() {
   const [showPreview, setShowPreview] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [markdown, setMarkdown] = useState();
+  const [error, setError] = useState("");
+  const [inputColor, setInputColor] = useState("");
+  const [markdownContent, setMarkdownContent] = useState("");
+  const [image, setImage] = useState();
   const [token] = useLocalStorage();
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
     try {
       setIsDisabled(true);
-      const data = await createPost(token, title, markdown);
+      const data = await createPost(token, title, description, markdownContent);
+      console.log(title);
+      console.log(markdownContent);
+
+      if (!title && !markdownContent) {
+        setError(data.message);
+        setInputColor("danger");
+        return;
+      }
+      console.log(data);
       navigate(`/posts/${data.post.id}`);
 
-      toast("Post created!", {
-        style: {
-          margin: "5px",
-          color: "black",
-          backgroundColor: "white",
-          border: "2px solid black",
-          boxShadow: "5px 5px 5px black",
-        },
-      });
+      pushToast("Post created!");
       await refetchPosts();
     } catch (error) {
       console.error(error);
@@ -41,6 +52,20 @@ export default function CreatePost() {
       setIsDisabled(false);
     }
   };
+
+  const VisuallyHiddenInput = styled("input")`
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    white-space: nowrap;
+    width: 1px;
+  `;
+
+  console.log(image);
 
   return (
     <div
@@ -67,12 +92,13 @@ export default function CreatePost() {
                 "--Input-focusedHighlight": "2px solid black",
               },
               backgroundColor: "white",
-              border: "1.5px solid black",
+              border: `1.5px solid ${inputColor ? "#c41c1c" : "black"}`,
               height: "40px",
             }}
-            placeholder="Title"
+            color={inputColor}
+            placeholder="Title*"
             value={title}
-            onChange={(event) => setTitle(event.target.value)}
+            onChange={(e) => setTitle(e.target.value)}
           />
           <Input
             sx={{
@@ -85,52 +111,84 @@ export default function CreatePost() {
             }}
             placeholder="Description"
             value={description}
-            onChange={(event) => setDescription(event.target.value)}
+            onChange={(e) => setDescription(e.target.value)}
           />
-          <FormControl>
-            <Textarea
-              placeholder="Content"
-              minRows={5}
-              style={{ backgroundColor: "white", border: "1.5px solid black" }}
-              value={markdown}
-              onChange={(e) => setMarkdown(e.target.value)}
-              endDecorator={
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "end",
-                    gap: "var(--Textarea-paddingBlock)",
-                    pt: "var(--Textarea-paddingBlock)",
-                    borderTop: "1px solid",
-                    borderColor: "divider",
-                    flex: "auto",
-                  }}
-                >
-                  <Button
-                    variant="contained"
-                    onClick={() => setShowPreview((prev) => !prev)}
-                  >
-                    Preview
-                  </Button>
-                </Box>
-              }
-            />
-          </FormControl>
-          <hr />
-          {showPreview && (
-            <div className="markdown">
-              <MarkdownPreview markdown={markdown} />
-            </div>
+          {error && (
+            <FormControl color={inputColor}>
+              <FormHelperText sx={{ fontSize: "15px" }}>
+                <ErrorOutline
+                  className="error-svg"
+                  sx={{ paddingRight: "10px" }}
+                />
+                {error}
+              </FormHelperText>
+            </FormControl>
           )}
-
-          <Button
-            className="details-button"
-            variant="contained"
-            onClick={() => handleSubmit()}
-            disabled={isDisabled}
-          >
-            Submit
-          </Button>
+          {showPreview ? (
+            <>
+              <hr />
+              <div
+                className="markdown"
+                style={{ margin: 0, textAlign: "center" }}
+              >
+                <MarkdownPreview markdown={markdownContent} />
+              </div>
+              <hr />
+            </>
+          ) : (
+            <FormControl>
+              <Textarea
+                sx={{
+                  ":focus-within": {
+                    "--Textarea-focusedHighlight": `1.5px solid black`,
+                  },
+                  height: "200px",
+                  backgroundColor: "white",
+                  border: `1.5px solid ${inputColor ? "#c41c1c" : "black"}`,
+                }}
+                color={inputColor}
+                variant="soft"
+                placeholder="Content*"
+                value={markdownContent}
+                onChange={(e) => setMarkdownContent(e.target.value)}
+              />
+            </FormControl>
+          )}
+          <div style={{ margin: 20 }}>
+            <Button
+              sx={{
+                backgroundColor: "white",
+                color: "black",
+                border: "2px solid black",
+                margin: "0 10px",
+                boxShadow: " 5px 5px 5px black",
+                ":hover": { backgroundColor: "#c0c0c0" },
+              }}
+              component="label"
+              variant="contained"
+            >
+              file
+              <VisuallyHiddenInput
+                type="file"
+                value={image}
+                onChange={(e) => console.log(e.target.files[0])}
+              />
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => setShowPreview((prev) => !prev)}
+            >
+              Preview
+            </Button>
+            <Button
+              className="details-button"
+              variant="contained"
+              onClick={() => handleSubmit()}
+              disabled={isDisabled}
+            >
+              Submit
+            </Button>
+          </div>
         </Stack>
       </div>
     </div>

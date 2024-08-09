@@ -10,14 +10,18 @@ export default async function fetchPosts(page, limit) {
   return data;
 }
 
-export async function createPost(token, title, content) {
+export async function createPost(token, title, description, content) {
   const response = await fetch(`http://localhost:4001/api/posts`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ title: title, content: content }),
+    body: JSON.stringify({
+      title: title,
+      description: description,
+      content: content,
+    }),
   });
 
   if (!response.ok) {

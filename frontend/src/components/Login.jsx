@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Person,
   Lock,
-  InfoOutlined,
+  ErrorOutline,
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
@@ -81,7 +81,7 @@ export default function Login() {
       {error && (
         <FormControl color={inputColor}>
           <FormHelperText>
-            <InfoOutlined />
+            <ErrorOutline className="error-svg" sx={{ paddingRight: "10px" }} />
             {error}
           </FormHelperText>
         </FormControl>

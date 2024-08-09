@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, IconButton } from "@mui/material";
 import { Person, Lock, Visibility, VisibilityOff } from "@mui/icons-material";
-import ErrorOutlined from "@mui/icons-material/ErrorOutlined"; // не работает красный цет
+import { ErrorOutline } from "@mui/icons-material";
 import {
   Stack,
   Input,
@@ -95,7 +95,10 @@ export default function Register() {
         {error && (
           <FormControl color={inputColor}>
             <FormHelperText>
-              <ErrorOutlined color="error" />
+              <ErrorOutline
+                className="error-svg"
+                sx={{ paddingRight: "10px" }}
+              />
               {error}
             </FormHelperText>
           </FormControl>

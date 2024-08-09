@@ -4,7 +4,6 @@ import { PostsContext } from "../context/PostsContext";
 import { SearchPostsContext } from "../context/SearchPostsContext";
 import { UserContext } from "../context/UserContext";
 import { ProfileContext } from "../context/ProfileContext";
-import MarkdownPreview from "../functions/MarkdownPreview";
 
 export default function HandlePosts() {
   const { posts } = useContext(PostsContext);
@@ -26,15 +25,22 @@ export default function HandlePosts() {
 
   return show.map((post) => (
     <Link className="post-card" key={post.id} to={`/posts/${post.id}`}>
-      <h2>Title: {post.title}</h2>
-      <p>
-        Content: <MarkdownPreview markdown={post.content} />
-      </p>
-      <p>
-        Author:
-        {post.author.username === user?.name ? "me" : post.author.username}
-      </p>
-      <p>Likes: {post.numberOfLikes}</p>
+      {console.log(post)}
+
+      <img
+        className="card-image"
+        src="https://media.istockphoto.com/id/517643357/photo/thunderstorm-lightning-with-dark-cloudy-sky.jpg?s=1024x1024&w=is&k=20&c=Bj1lc-TNwhlv1JDNLqCdMetB9ji1wrqA84ZsPDXZAgY="
+      />
+      <div className="card-info">
+        <h5 className="card-title">{post.title}</h5>
+        <p className="card-description">{post.description}</p>
+        <div className="card-other">
+          <p>
+            {post.author.username === user?.name ? "me" : post.author.username}
+          </p>
+          <p>Likes: {post.numberOfLikes}</p>
+        </div>
+      </div>
     </Link>
   ));
 }

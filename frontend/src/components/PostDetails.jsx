@@ -29,11 +29,11 @@ import {
   Delete,
 } from "@mui/icons-material";
 import { Input } from "@mui/joy";
-import toast from "react-hot-toast";
 import { deletePost } from "../fetches/fetchPosts";
 import fetchFavourites from "../fetches/fetchFavourites";
 import { PostsContext } from "../context/PostsContext";
 import MarkdownPreview from "../functions/MarkdownPreview";
+import pushToast from "../functions/toast.js";
 
 export default function PostDetails() {
   const [likeIcon, setLikeIcon] = useState();
@@ -97,15 +97,7 @@ export default function PostDetails() {
       await deletePost(id, token);
       await refetchPosts();
 
-      toast("Post deleted!", {
-        style: {
-          margin: "5px",
-          color: "black",
-          backgroundColor: "white",
-          border: "2px solid black",
-          boxShadow: "5px 5px 5px black",
-        },
-      });
+      pushToast("Post deleted!");
 
       navigate("/posts");
     } catch (error) {
@@ -120,15 +112,8 @@ export default function PostDetails() {
 
     const data = await fetchLikes(id, token);
     setLikeIcon(data.success);
-    toast(data.message, {
-      style: {
-        margin: "5px",
-        color: "black",
-        backgroundColor: "white",
-        border: "2px solid black",
-        boxShadow: "5px 5px 5px black",
-      },
-    });
+
+    pushToast(data.message);
   };
 
   const handleFavourite = async () => {
@@ -139,15 +124,7 @@ export default function PostDetails() {
     setFavouriteIcon(data.success);
     console.log(data.success);
 
-    toast(data.message, {
-      style: {
-        margin: "5px",
-        color: "black",
-        backgroundColor: "white",
-        border: "2px solid black",
-        boxShadow: "5px 5px 5px black",
-      },
-    });
+    pushToast(data.message);
   };
 
   function handleLimit(event) {
@@ -163,15 +140,7 @@ export default function PostDetails() {
       const data = await createComment(id, token, commentText);
       setComments((prev) => [data.comment, ...prev]);
       setCommentText("");
-      toast("Comment added!", {
-        style: {
-          margin: "5px",
-          color: "black",
-          backgroundColor: "white",
-          border: "2px solid black",
-          boxShadow: "5px 5px 5px black",
-        },
-      });
+      pushToast("Comment added!");
     } catch (error) {
       console.error(error);
     } finally {
@@ -183,15 +152,7 @@ export default function PostDetails() {
     try {
       await deleteComment(id, commentId, token);
       setComments(comments.filter((comment) => comment.id !== commentId));
-      toast("Comment deleted!", {
-        style: {
-          margin: "5px",
-          color: "black",
-          backgroundColor: "white",
-          border: "2px solid black",
-          boxShadow: "5px 5px 5px black",
-        },
-      });
+      pushToast("Comment deleted!");
     } catch (error) {
       console.error(error);
     }

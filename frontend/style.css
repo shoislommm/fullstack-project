@@ -2,11 +2,14 @@
   box-sizing: border-box;
   color: #333;
 }
+* .error-svg > path {
+  color: #c41c1c;
+}
 
 body {
-  background-image: url(https://images8.alphacoders.com/133/1337140.png);
-  background-position: left 43% top 50%;
+  background-image: url(https://img.freepik.com/premium-photo/black-gold-image-black-orange-abstract-background_662214-135091.jpg);
   /* background-repeat: no-repeat; */
+  background-size: 100%;
   margin: 0;
   font-family: "Gill Sans", "Gill Sans MT", "Trebuchet MS", sans-serif;
 }
@@ -110,6 +113,9 @@ header {
   background-color: white;
   box-shadow: 10px 10px 10px black;
 }
+.post-details button {
+  width: 100px;
+}
 
 .post-comments {
   display: flex;
@@ -198,11 +204,13 @@ header {
 }
 
 .post-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
   margin: 30px 50px;
-  padding: 10px 30px;
-  height: 200px;
-  width: 400px;
-  border: 2px solid black;
+  height: 250px;
+  width: 600px;
   border-radius: 10px;
   background-color: white;
   box-shadow: 10px 10px 10px black;
@@ -210,6 +218,48 @@ header {
 
 .post-card:hover {
   background-color: #d9d6d6;
+  cursor: pointer;
+}
+
+.card-image {
+  object-fit: cover;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  width: 30%;
+  height: 250px;
+}
+
+.card-info {
+  display: flex;
+  padding: 0 1rem;
+  width: 100%;
+  flex-direction: column;
+}
+
+.card-title {
+  margin: 0;
+  height: 80px;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #111827;
+}
+
+.card-description {
+  margin: 0;
+  font-weight: 400;
+  color: #374151;
+}
+
+.card-other {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.card-other p {
+  margin: 0 0px;
+  margin-top: 50px;
 }
 
 .posts {
@@ -223,8 +273,6 @@ header {
 .posts-limit {
   width: 140px;
   height: 60px;
-  margin-left: 300px;
-  margin-right: 200px;
   border: 2px solid #333;
   border-radius: 10px;
   background-color: white;
@@ -244,10 +292,14 @@ header {
 
 .control-panel {
   display: flex;
-  justify-content: end;
+  justify-content: center;
   align-items: center;
   width: auto;
   margin: 100px 0;
+}
+
+.control-panel > div {
+  margin: 0 100px;
 }
 
 .auth {
@@ -318,6 +370,13 @@ header {
   margin-left: 25px;
 }
 
+.markdown {
+  height: 171px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .markdown img {
   width: 300px;
   height: 300px;
@@ -335,8 +394,4 @@ header {
 .details-info > .username {
   margin-left: 0px;
   padding-left: 0px;
-}
-
-.post-card img {
-  display: none;
 }
