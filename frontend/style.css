@@ -39,24 +39,6 @@ header {
   text-decoration: underline;
 }
 
-.profile {
-  margin: 0px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: end;
-}
-.profile button {
-  background-color: white;
-  color: black;
-  border: 2px solid black;
-  margin: 0 15px;
-  box-shadow: 5px 5px 5px black;
-}
-
-.profile button:hover {
-  background-color: #c0c0c0;
-}
-
 .button-parent {
   margin: 0px 10px;
   display: flex;
@@ -93,7 +75,7 @@ header {
 .button-parent .search-button {
   background-color: white;
   color: black;
-  border: 1px solid black;
+  border: 2px solid black;
   margin: 0;
   height: 40px;
   box-shadow: none;
@@ -103,12 +85,12 @@ header {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
   height: auto;
-  width: 700px;
+  width: 1200px;
   margin: 70px 0;
   padding: 20px 10px;
   border: 2px solid black;
-  text-align: center;
   border-radius: 10px;
   background-color: white;
   box-shadow: 10px 10px 10px black;
@@ -166,20 +148,23 @@ header {
 }
 
 .details-content {
-  align-self: center;
+  align-self: flex-start;
   justify-content: center;
-  height: 33%;
-  margin: 10px;
+  font-size: large;
+  height: auto;
+  margin: 40px 100px;
 }
 
 .details-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  align-self: flex-end;
   font-size: large;
-  height: 33%;
+  height: 100px;
   width: 100%;
   padding: 0px 30px;
+  /* margin: 10px; */
 }
 
 .details-info:only-child {
@@ -207,7 +192,7 @@ header {
   display: flex;
   flex-direction: row;
   align-items: center;
-
+  text-decoration: none;
   margin: 30px 50px;
   height: 250px;
   width: 600px;
@@ -221,7 +206,7 @@ header {
   cursor: pointer;
 }
 
-.card-image {
+.card-banner {
   object-fit: cover;
   border-top-left-radius: 10px;
   border-bottom-left-radius: 10px;
@@ -260,6 +245,16 @@ header {
 .card-other p {
   margin: 0 0px;
   margin-top: 50px;
+}
+
+.card-user {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-user svg {
+  margin-right: 5px;
 }
 
 .posts {
@@ -355,13 +350,12 @@ header {
   justify-self: start;
 }
 
-.test {
+.post-buttons {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 60px 0;
-  margin-bottom: 30px;
-  padding: 0 40px;
+  margin: 40px 0;
+  padding: 0 30px;
   width: 100%;
 }
 
@@ -371,20 +365,17 @@ header {
 }
 
 .markdown {
-  height: 171px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  height: auto;
 }
 
 .markdown img {
-  width: 300px;
-  height: 300px;
+  max-width: 400px;
+  height: auto;
 }
 
 .details-content img {
-  width: 300px;
-  height: 300px;
+  max-width: 500px;
+  height: auto;
 }
 
 .details-info > .child {

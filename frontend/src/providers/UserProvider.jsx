@@ -3,51 +3,87 @@
 import { useQuery } from "@tanstack/react-query";
 import { UserContext } from "../context/UserContext";
 import fetchUser from "../fetches/fetchUser";
-import { Box } from "@mui/material";
-import { CircularProgress } from "@mui/joy";
-import { useEffect, useState } from "react";
+import { getBookmarks } from "../fetches/fetchBookmarks";
+import { useState } from "react";
 import useLocalStorage from "../hooks/useLocalStorage";
+import { getPostsByUserId } from "../fetches/fetchPosts";
+import { useLocation } from "react-router-dom";
+import Loading from "../components/Loading";
 
 export default function UserProvider({ children }) {
+  const location = useLocation();
+  const [myPosts, setMyPosts] = useState(null);
+  const [myBookmarks, setMyBookmarks] = useState([]);
   const [token, setToken] = useLocalStorage();
+  const [tokenFrom, setTokenFrom] = useState("server");
   const [user, setUser] = useState(null);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["provider", token],
-    queryFn: () => fetchUser(token),
+  const { data: userData, isLoading: isUserLoading } = useQuery({
+    queryKey: ["user", token, tokenFrom],
+    queryFn: async () => {
+      const data = await fetchUser(token, tokenFrom);
+      setUser(data?.user ? data.user : null);
+      return data;
+    },
     enabled: !!token,
   });
 
-  useEffect(() => {
-    setUser(data?.user ? data.user : null);
-  }, [data, token]);
+  const { data: bookmarksData, isLoading: isBookmarksLoading } = useQuery({
+    queryKey: ["bookmarks", token],
+    queryFn: async () => {
+      const data = await getBookmarks(token);
+      setMyBookmarks(data.bookmarks);
+      return data;
+    },
+    enabled: location.pathname === "/bookmarks",
+    staleTime: 0,
+    gcTime: 0,
+  });
 
-  const signout = () => {
-    setToken();
-  };
+  if (isUserLoading || isBookmarksLoading) {
+    return <Loading />;
+  }
 
-  const signin = (token) => {
+  const signIn = (token) => {
     setToken(token);
   };
 
-  if (isLoading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: "200px",
-        }}
-      >
-        <CircularProgress size="lg" variant="plain" color="neutral" />
-      </Box>
-    );
+  const signOut = () => {
+    setToken();
+  };
+
+  const signInWithGoogle = (token) => {
+    setToken(token);
+  };
+
+  const signOutWithGoogle = () => {
+    setToken();
+  };
+
+  async function showMyPosts() {
+    const data = await getPostsByUserId(token);
+
+    if (data.success === false) {
+      console.log(data.message);
+      return;
+    }
+    setMyPosts(data.posts);
+
+    return;
   }
 
-  return (
-    <UserContext.Provider value={{ user, signout, signin }}>
-      {children}
-    </UserContext.Provider>
-  );
+  const data = {
+    user,
+
+    myPosts,
+    myBookmarks,
+    signIn,
+    signOut,
+    signInWithGoogle,
+    signOutWithGoogle,
+    setTokenFrom,
+    showMyPosts,
+  };
+
+  return <UserContext.Provider value={data}>{children}</UserContext.Provider>;
 }

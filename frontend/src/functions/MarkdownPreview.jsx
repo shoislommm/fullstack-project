@@ -1,6 +1,8 @@
 import { Remarkable } from "remarkable";
 
-const md = new Remarkable();
+const md = new Remarkable({
+  breaks: true,
+});
 
 // eslint-disable-next-line react/prop-types
 export default function MarkdownPreview({ markdown }) {

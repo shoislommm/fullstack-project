@@ -1,23 +1,23 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Box } from "@mui/material";
-import { CircularProgress } from "@mui/joy";
 import { PostsContext } from "../context/PostsContext";
-import fetchPosts from "../fetches/fetchPosts";
+import { getPosts } from "../fetches/fetchPosts";
+import Loading from "../components/Loading";
 
 // eslint-disable-next-line react/prop-types
 export default function PostsProvider({ children }) {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [requestParams, setRequestParams] = useState("");
 
   const {
     data: results,
-    isLoading: isLoading,
+    isLoading,
     refetch: refetchPosts,
   } = useQuery({
-    queryKey: ["posts", page, limit],
-    queryFn: () => fetchPosts(page, limit),
+    queryKey: ["posts", page, limit, requestParams],
+    queryFn: () => getPosts(page, limit, requestParams),
   });
 
   function handlePagination(event, page) {
@@ -30,19 +30,12 @@ export default function PostsProvider({ children }) {
     setPage(1);
   }
 
+  function handleSearch(params) {
+    setRequestParams(params);
+  }
+
   if (isLoading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: "200px",
-        }}
-      >
-        <CircularProgress size="lg" variant="plain" color="neutral" />
-      </Box>
-    );
+    return <Loading />;
   }
 
   const posts = results.posts;
@@ -53,9 +46,11 @@ export default function PostsProvider({ children }) {
     page,
     limit,
     totalPages,
+    requestParams,
+    refetchPosts,
     handlePagination,
     handleLimit,
-    refetchPosts,
+    handleSearch,
   };
 
   return <PostsContext.Provider value={data}>{children}</PostsContext.Provider>;

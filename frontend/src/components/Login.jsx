@@ -11,6 +11,7 @@ import { Stack, Input, FormHelperText, FormControl } from "@mui/joy";
 import { Button, IconButton } from "@mui/material";
 import { fetchLogin } from "../fetches/fetchAuth";
 import { UserContext } from "../context/UserContext";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -18,7 +19,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [inputColor, setInputColor] = useState("neutral");
   const [showPassword, setShowPassword] = useState(false);
-  const { signin } = useContext(UserContext);
+  const { signIn, signInWithGoogle, setTokenFrom } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -33,8 +34,8 @@ export default function Login() {
       }
 
       const token = response.jwtToken;
-
-      signin(token);
+      setTokenFrom("server");
+      signIn(token);
       navigate("/posts");
     } catch (error) {
       console.error(error);
@@ -97,6 +98,21 @@ export default function Login() {
       >
         Login
       </Button>
+      <br />
+      <br />
+      <div>
+        <GoogleLogin
+          onSuccess={(credentialResponse) => {
+            signInWithGoogle(credentialResponse.credential);
+            setTokenFrom("google");
+            console.log(credentialResponse);
+          }}
+          onError={() => {
+            console.log("Login Failed");
+          }}
+          useOneTap
+        />
+      </div>
     </div>
   );
 }

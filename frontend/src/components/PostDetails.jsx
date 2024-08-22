@@ -1,17 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useQuery } from "@tanstack/react-query";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import Modal from "./Modal";
 import useLocalStorage from "../hooks/useLocalStorage";
-import fetchPost from "../fetches/fetchPost";
 import {
   getComments,
   createComment,
   deleteComment,
 } from "../fetches/fetchComments";
-import fetchLikes from "../fetches/fetchLikes";
+import { addLike, getLikeById } from "../fetches/fetchLikes";
 import {
   Button,
   FormControl,
@@ -27,18 +26,21 @@ import {
   WestRounded,
   Person,
   Delete,
+  AccountCircle,
 } from "@mui/icons-material";
 import { Input } from "@mui/joy";
-import { deletePost } from "../fetches/fetchPosts";
-import fetchFavourites from "../fetches/fetchFavourites";
+import { getPostById, deletePost } from "../fetches/fetchPosts";
 import { PostsContext } from "../context/PostsContext";
 import MarkdownPreview from "../functions/MarkdownPreview";
 import pushToast from "../functions/toast.js";
+import { addToBookmarks, getBookmarkById } from "../fetches/fetchBookmarks.js";
+import Loading from "./Loading";
 
 export default function PostDetails() {
-  const [likeIcon, setLikeIcon] = useState();
-  const [favouriteIcon, setFavouriteIcon] = useState();
+  const [isLiked, setIsLiked] = useState();
+  const [numberOfLikes, setNumberOfLikes] = useState();
   const [loading, setLoading] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState();
   const [isDisabled, setIsDisabled] = useState(true);
   const [comments, setComments] = useState([]);
   const [commentId, setCommentId] = useState("");
@@ -52,28 +54,65 @@ export default function PostDetails() {
   const navigate = useNavigate();
   const { refetchPosts } = useContext(PostsContext);
 
-  const {
-    data: postData,
-    isLoading: isPostLoading,
-    refetch: postRefetch,
-  } = useQuery({
+  const { data: postData, isLoading: isPostLoading } = useQuery({
     queryKey: ["post", id],
-    queryFn: () => fetchPost(id),
+    queryFn: async () => {
+      const data = await getPostById(id);
+      setNumberOfLikes(data.post.numberOfLikes);
+      return data;
+    },
+    gcTime: 0,
+    staleTime: 0,
   });
 
   const { data: commentsData, isLoading: isCommentsLoading } = useQuery({
-    queryKey: ["comments", id, limit],
-    queryFn: () => getComments(id, limit, null),
+    queryKey: ["comments", id, limit, cursor],
+    queryFn: async () => {
+      const data = await getComments(id, limit, cursor);
+      setComments(data.comments);
+      setCursor(data.nextCursor);
+      return data;
+    },
+    gcTime: 0,
+    staleTime: 0,
   });
 
-  useEffect(() => {
-    if (isCommentsLoading) return;
+  const { data: bookmarkData, isLoading: isBookmarkLoading } = useQuery({
+    queryKey: ["bookmark", token, id],
+    queryFn: async () => {
+      const data = await getBookmarkById(token, id);
+      setIsBookmarked(data.isBookmarked);
+      return data;
+    },
+    gcTime: 0,
+    staleTime: 0,
+  });
 
-    setComments(commentsData.comments);
-    setCursor(commentsData.nextCursor);
-  }, [commentsData, isCommentsLoading]);
+  const { data: likeData, isLoading: isLikeLoading } = useQuery({
+    queryKey: ["like", token, id],
+    queryFn: async () => {
+      const data = await getLikeById(token, id);
+      setIsLiked(data.isLiked);
+      return data;
+    },
+    gcTime: 0,
+    staleTime: 0,
+  });
 
-  const loadMore = async () => {
+  if (
+    isPostLoading ||
+    isCommentsLoading ||
+    isBookmarkLoading ||
+    isLikeLoading
+  ) {
+    return <Loading />;
+  }
+
+  if (!isBookmarked) {
+    return;
+  }
+
+  const handleLoadMore = async () => {
     setLoading(true);
 
     try {
@@ -87,10 +126,6 @@ export default function PostDetails() {
       setLoading(false);
     }
   };
-
-  if (isPostLoading || isCommentsLoading) {
-    return;
-  }
 
   const handleDeletePost = async () => {
     try {
@@ -110,19 +145,33 @@ export default function PostDetails() {
       navigate("/auth");
     }
 
-    const data = await fetchLikes(id, token);
-    setLikeIcon(data.success);
+    isLiked
+      ? setNumberOfLikes((prev) => prev - 1)
+      : setNumberOfLikes((prev) => prev + 1);
+
+    setIsLiked((prev) => !prev);
+
+    const data = await addLike(token, id);
+
+    if (!data.success) {
+      return;
+    }
 
     pushToast(data.message);
   };
 
-  const handleFavourite = async () => {
+  const handleBookmark = async () => {
     if (!user) {
       navigate("/auth");
     }
-    const data = await fetchFavourites(id, token);
-    setFavouriteIcon(data.success);
-    console.log(data.success);
+
+    setIsBookmarked((prev) => !prev);
+
+    const data = await addToBookmarks(token, id);
+
+    if (!data.success) {
+      return;
+    }
 
     pushToast(data.message);
   };
@@ -132,14 +181,15 @@ export default function PostDetails() {
     setCursor(null);
   }
 
-  const post = postData.post;
-
   const handleCreateComment = async () => {
     try {
       setLoading(true);
+
       const data = await createComment(id, token, commentText);
+
       setComments((prev) => [data.comment, ...prev]);
       setCommentText("");
+
       pushToast("Comment added!");
     } catch (error) {
       console.error(error);
@@ -158,6 +208,8 @@ export default function PostDetails() {
     }
   };
 
+  const post = postData.post;
+
   return (
     <div
       className="button-parent"
@@ -166,7 +218,7 @@ export default function PostDetails() {
         flexDirection: "column",
       }}
     >
-      <div className="test">
+      <div className="post-buttons">
         <Button
           variant="contained"
           startIcon={<WestRounded />}
@@ -175,41 +227,45 @@ export default function PostDetails() {
           Go Back
         </Button>
         {post.author.username === user?.name ? (
-          <Button variant="contained" onClick={() => handleDeletePost()}>
-            Delete Post
-          </Button>
+          <div style={{ display: "flex" }}>
+            <Button
+              variant="contained"
+              onClick={() => navigate(`/posts/update/${id}`)}
+            >
+              Update Post
+            </Button>
+            <Button variant="contained" onClick={() => handleDeletePost()}>
+              Delete Post
+            </Button>
+          </div>
         ) : null}
       </div>
       <div className="post-details" key={post.id}>
         <h2 className="details-title"> {post.title}</h2>
-        <p className="details-content">
+        <div className="details-content">
           <MarkdownPreview markdown={post.content} />
-        </p>
+        </div>
         <div className="details-info">
-          <p className=" username child">
+          <p className="username child card-user">
+            <AccountCircle />
             {post.author.username === user?.name ? "me" : post.author.username}
           </p>
           <Button
             className="like-button child"
             variant="contained"
             onClick={() => {
-              postRefetch();
               handleLike();
-              setLikeIcon(!likeIcon);
             }}
           >
-            {likeIcon ? <Favorite /> : <FavoriteBorder />}
-            <p>{post.numberOfLikes}</p>
+            {isLiked ? <Favorite /> : <FavoriteBorder />}
+            <p>{numberOfLikes}</p>
           </Button>
           <Button
             className="child"
             variant="contained"
-            onClick={() => {
-              setFavouriteIcon(!favouriteIcon);
-              handleFavourite();
-            }}
+            onClick={handleBookmark}
           >
-            {favouriteIcon ? <Bookmark /> : <BookmarkBorder />}
+            {isBookmarked ? <Bookmark /> : <BookmarkBorder />}
           </Button>
         </div>
       </div>
@@ -228,7 +284,6 @@ export default function PostDetails() {
           placeholder="Add a comment..."
           onChange={(event) => {
             setCommentText(event.target.value);
-            console.log(commentText);
             if (commentText?.trim?.() != "") {
               setIsDisabled(false);
             } else setIsDisabled(true);
@@ -237,7 +292,7 @@ export default function PostDetails() {
           endDecorator={
             <Button
               className="comment-button"
-              onClick={() => handleCreateComment()}
+              onClick={handleCreateComment}
               disabled={isDisabled}
             >
               comment
@@ -248,13 +303,13 @@ export default function PostDetails() {
           <div className="comment-card" key={comment.id} id={comment.id}>
             <Person fontSize="large" />
             <b className="comment-author">
-              {comment.author.username === user?.name
+              {comment.user.username === user.name
                 ? "me"
                 : comment.author.username}
               :
             </b>
             <p className="comment-text">{comment.text}</p>
-            {comment.author.username === user?.name ? (
+            {comment.user.username === user.name ? (
               <Delete
                 onClick={() => {
                   setCommentId(comment.id);
@@ -313,7 +368,7 @@ export default function PostDetails() {
               },
             }}
             onClick={() => {
-              loadMore();
+              handleLoadMore();
             }}
             disabled={loading}
           >

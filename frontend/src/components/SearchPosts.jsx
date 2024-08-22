@@ -1,11 +1,11 @@
-import { useContext } from "react";
 import { Stack, Input } from "@mui/joy";
 import { Button } from "@mui/material";
-import { SearchPostsContext } from "../context/SearchPostsContext";
+import { useContext, useState } from "react";
+import { PostsContext } from "../context/PostsContext";
 
 export default function SearchPosts() {
-  const { requestParams, setRequestParams, handleSearch } =
-    useContext(SearchPostsContext);
+  const { handleSearch } = useContext(PostsContext);
+  const [requestParams, setRequestParams] = useState("");
 
   return (
     <div className="button-parent input-search">
@@ -24,7 +24,7 @@ export default function SearchPosts() {
               className="search-button"
               variant="contained"
               onClick={() => {
-                handleSearch();
+                handleSearch(requestParams);
               }}
             >
               Search

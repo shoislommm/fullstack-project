@@ -2,15 +2,19 @@ import HandlePosts from "./HandlePosts";
 import PostsPagination from "./PostsPagination";
 import PostsLimit from "./PostsLimit";
 import { useContext } from "react";
-import { PostsContext } from "../context/PostsContext";
+import { UserContext } from "../context/UserContext";
 
-export default function Posts() {
-  const { posts } = useContext(PostsContext);
+export default function Bookmarks() {
+  const { myBookmarks } = useContext(UserContext);
+
+  if (!myBookmarks) {
+    return;
+  }
 
   return (
     <div>
       <div className="posts">
-        <HandlePosts posts={posts} />
+        <HandlePosts posts={myBookmarks} />
       </div>
 
       <div className="control-panel">

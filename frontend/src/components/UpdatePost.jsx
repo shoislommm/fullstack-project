@@ -1,7 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Button } from "@mui/material";
 import { WestRounded, ErrorOutline } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   Stack,
   Input,
@@ -10,7 +11,7 @@ import {
   Textarea,
   styled,
 } from "@mui/joy";
-import { createPost } from "../fetches/fetchPosts";
+import { getPostById, updatePost } from "../fetches/fetchPosts";
 import { useContext, useEffect, useState } from "react";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { PostsContext } from "../context/PostsContext";
@@ -18,7 +19,7 @@ import MarkdownPreview from "../functions/MarkdownPreview";
 import pushToast from "../functions/toast";
 import fetchImage from "../fetches/fetchImages";
 
-export default function CreatePost() {
+export default function UpdatePost() {
   const { refetchPosts } = useContext(PostsContext);
   const [isDisabled, setIsDisabled] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -29,9 +30,32 @@ export default function CreatePost() {
   const [markdownContent, setMarkdownContent] = useState("");
   const [imageForm, setImageForm] = useState(null);
   const [bannerForm, setBannerForm] = useState(null);
-  const [banner, setBanner] = useState();
+  const [banner, setBanner] = useState("");
   const [token] = useLocalStorage();
+  const { id } = useParams();
   const navigate = useNavigate();
+
+  const {
+    data,
+    isLoading,
+    refetch: refetchPost,
+  } = useQuery({
+    queryKey: ["post", id],
+    queryFn: () => getPostById(id),
+  });
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+
+    const post = data.post;
+
+    setTitle(post.title);
+    setDescription(post.description == null ? "" : post.description);
+    setMarkdownContent(post.content);
+    setBanner(post.banner);
+  }, [data]);
 
   useEffect(() => {
     (async function handleImage() {
@@ -62,7 +86,7 @@ export default function CreatePost() {
       formData.append("content", markdownContent);
       setIsDisabled(true);
 
-      const data = await createPost(token, formData);
+      const data = await updatePost(token, id, formData);
 
       if (!title || !markdownContent) {
         setError(data.message);
@@ -71,9 +95,10 @@ export default function CreatePost() {
       }
 
       await refetchPosts();
+      await refetchPost();
 
-      pushToast("Post created!");
-      navigate(`/posts`);
+      pushToast("Post updated!");
+      navigate(`/posts/${id}`);
     } catch (error) {
       console.error(error);
     } finally {
@@ -105,12 +130,12 @@ export default function CreatePost() {
         className="details-button"
         variant="contained"
         startIcon={<WestRounded />}
-        onClick={() => navigate("/posts")}
+        onClick={() => navigate(`/posts/${id}`)}
       >
         Go Back
       </Button>
       <div className="post-details">
-        <h1>Create Your Post</h1>
+        <h1>Update Your Post</h1>
         <div
           style={{
             display: "flex",
@@ -204,7 +229,7 @@ export default function CreatePost() {
                 Img
                 <VisuallyHiddenInput
                   type="file"
-                  // accept="image/*"
+                  accept="image/*"
                   onChange={(e) => {
                     setImageForm(e.target.files[0]);
                   }}
@@ -270,7 +295,15 @@ export default function CreatePost() {
                 </Button>
               </label>
             </div>
-            {banner ? <img src={banner} /> : null}
+            {banner ? (
+              <img
+                src={
+                  banner.includes("blob")
+                    ? banner
+                    : `http://localhost:4001/${banner}`
+                }
+              />
+            ) : null}
           </Stack>
           {showPreview ? (
             <Stack spacing={2} m="0 90px" pt="40px" pb="70px" width="400px">
